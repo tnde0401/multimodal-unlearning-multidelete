@@ -1,0 +1,25 @@
+# Kết quả chạy và dữ liệu (rất nặng, không đưa lên Git)
+work/
+results/
+multidelete_out/
+checkpoints/
+*.pth
+*.ckpt
+*.pt
+
+# Python / Jupyter
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.venv/
+venv/
+
+# Hệ điều hành / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Khoá truy cập (không bao giờ commit)
+kaggle.json
+.env
