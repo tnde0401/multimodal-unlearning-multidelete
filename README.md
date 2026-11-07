@@ -36,7 +36,7 @@ python multidelete.py nlvr2        # toàn bộ thí nghiệm NLVR2
 
 `python multidelete.py all` là `setup` + `flickr30k` + `nlvr2`. Các lệnh `flickr30k`, `nlvr2`, `demo` tự gọi `setup` nếu chưa làm.
 
-Chạy thử luồng bằng `--profile smoke` (tập xóa nhỏ, vài bước huấn luyện, chạy trong vài chục phút):
+Chạy thử luồng bằng `--profile smoke` (tập xóa nhỏ, vài bước huấn luyện):
 
 ```bash
 python multidelete.py flickr30k --profile smoke
@@ -57,19 +57,19 @@ Các bước:
 2. Tạo tập xóa `D_f`: với mỗi seed (42, 87, 21) chọn ngẫu nhiên 5000 ảnh train, `D_f` là 1000 ảnh đầu (= 5000 cặp ảnh-caption). Lưu kèm SHA-256 trong `split_manifest.json`.
 3. Chạy lần lượt 10 mục, mỗi mục là một lệnh con gọi `run_md_retrieval.py` (thứ tự cố định, `original` luôn đầu tiên để các mục sau dùng lại kết quả "trước khi quên"):
 
-| Mục (`--only`) | Nội dung | Thời gian ước tính trên T4 |
-|---|---|---|
-| `original` | ALBEF đã fine-tune của LAVIS, chỉ đánh giá | khoảng 15 phút |
-| `main` | MultiDelete gốc (MD trên CLS của fusion) | khoảng 41 phút |
-| `itc` | MD-ITC: MD trên ma trận tương đồng ITC, sát code repo | khoảng 39 phút |
-| `negdr` | Neg-Dr: cặp âm lấy từ `D_r` | khoảng 41 phút |
-| `noMD`, `noMKR`, `noUKR` | Ablation, bỏ lần lượt `L_MD`, `L_MKR`, `L_UKR` | khoảng 50 phút mỗi mục |
-| `ft` | Baseline FineTune trên `D_r` (1 epoch, lr 5e-5) | khoảng 17 phút |
-| `neggrad` | Baseline NegGrad có clip gradient (lr 2e-6, 25 bước) | khoảng 11 phút |
-| `dtd` | Baseline Descent-to-Delete | khoảng 10 phút |
-| `mdF`, `neggradraw` | Tùy chọn, chỉ chạy khi gọi rõ bằng `--only`: MultiDelete-F (chỉ cập nhật cross-attention và ITM head) và NegGrad nguyên bản không clip | |
+| Mục (`--only`) | Nội dung |
+|---|---|
+| `original` | ALBEF đã fine-tune của LAVIS, chỉ đánh giá |
+| `main` | MultiDelete gốc (MD trên CLS của fusion) |
+| `itc` | MD-ITC: MD trên ma trận tương đồng ITC, sát code repo |
+| `negdr` | Neg-Dr: cặp âm lấy từ `D_r` |
+| `noMD`, `noMKR`, `noUKR` | Ablation, bỏ lần lượt `L_MD`, `L_MKR`, `L_UKR` |
+| `ft` | Baseline FineTune trên `D_r` (1 epoch, lr 5e-5) |
+| `neggrad` | Baseline NegGrad có clip gradient (lr 2e-6, 25 bước) |
+| `dtd` | Baseline Descent-to-Delete |
+| `mdF`, `neggradraw` | Tùy chọn, chỉ chạy khi gọi rõ bằng `--only`: MultiDelete-F (chỉ cập nhật cross-attention và ITM head) và NegGrad nguyên bản không clip |
 
-Tổng cộng ước tính khoảng 5 đến 6 giờ ở profile `fast` (thời gian ở bảng là số đo từ các lần chạy trên T4, riêng `original` là ước lượng). Muốn chạy một phần: `--only original,main` (đây là phần tối thiểu để có dòng chính của báo cáo).
+Muốn chạy một phần: `--only original,main` (đây là phần tối thiểu để có dòng chính của báo cáo).
 
 4. In bảng tổng hợp và lưu `summary_<profile>.csv`.
 
@@ -77,7 +77,7 @@ Thêm `--save-ckpt` để lưu checkpoint đầy đủ (~420 MB) của MultiDele
 
 **Profile:** `fast` (mặc định, 3 epoch, `k_test=16`) là cấu hình của các số trong báo cáo. `paper` dùng 5 epoch (bài báo không nêu số epoch trong phần chính) và `k_test=128`, chậm hơn nhiều. `smoke` chỉ để thử luồng.
 
-Retrain (huấn luyện lại từ đầu trên `D_r`) **không** có trong script vì tốn khoảng 27 giờ trên T4 (ước lượng). Báo cáo không có cột Retrain.
+Retrain (huấn luyện lại từ đầu trên `D_r`) **không** có trong script vì tốn nhiều thời gian. Báo cáo không có cột Retrain.
 
 ## 4. NLVR2
 
@@ -104,13 +104,13 @@ Thời gian thực tế của từng lần chạy được ghi trong `summary.cs
 python multidelete.py demo
 ```
 
-Huấn luyện lại MultiDelete và **lưu checkpoint** (khoảng 40 phút), rồi với 3 ảnh trong `D_f` và 2 ảnh trong `D_r` in ra 3 caption được xếp cao nhất của mô hình gốc và mô hình đã quên (ITC xếp hạng, ITM xếp lại 16 ứng viên đầu). Caption đúng của ảnh được đánh dấu ✓. Kho truy hồi gồm 1000 ảnh `D_f` và 1000 ảnh `D_r`. Hình và văn bản được lưu trong `<save>/flickr30k/demo/`.
+Huấn luyện lại MultiDelete và **lưu checkpoint**, rồi với 3 ảnh trong `D_f` và 2 ảnh trong `D_r` in ra 3 caption được xếp cao nhất của mô hình gốc và mô hình đã quên (ITC xếp hạng, ITM xếp lại 16 ứng viên đầu). Caption đúng của ảnh được đánh dấu ✓. Kho truy hồi gồm 1000 ảnh `D_f` và 1000 ảnh `D_r`. Hình và văn bản được lưu trong `<save>/flickr30k/demo/`.
 
 **Lưu ý:** demo là phần bổ sung sau các thí nghiệm chính và không có số liệu trong báo cáo. Các lệnh `flickr30k` và `nlvr2` không phụ thuộc vào nó. Nếu cần xem lại, xem `demo.txt` và log.
 
 ## 5b. Demo 1 (notebook riêng)
 
-`MultiDelete_Demo1.ipynb` là notebook độc lập, **không dùng bốn file `.py` ở trên**: ở §0b nó tự ghi ra ba file `.py` của riêng nó (`multidelete.py`, `run_md_retrieval.py`, `demo1_engine.py`) vào `/content/md_code`. Chạy trên Colab (GPU T4), lần đầu mất khoảng 40 phút để huấn luyện MultiDelete (cấu hình `fast`), sau đó lưu checkpoint trên Drive.
+`MultiDelete_Demo1.ipynb` là notebook độc lập, **không dùng bốn file `.py` ở trên**: ở §0b nó tự ghi ra ba file `.py` của riêng nó (`multidelete.py`, `run_md_retrieval.py`, `demo1_engine.py`) vào `/content/md_code`. Chạy trên Colab (GPU T4), lần đầu huấn luyện MultiDelete (cấu hình `fast`), sau đó lưu checkpoint trên Drive.
 
 Demo so sánh Top-K ảnh được truy hồi cho một câu truy vấn trước và sau khi xoá, trên tập `D_f` và tập đối chứng `D_r`. Kết quả đã chạy sẵn trong notebook (200 truy vấn mỗi nhóm, hạng ảnh đích trước và sau khi xoá):
 
@@ -170,11 +170,10 @@ FineTune và NegGrad ở lần chạy này là 1 epoch, MultiDelete là 5 epoch.
 
 **Cách đọc AUC:** `D_f` và `D_r` đều là dữ liệu huấn luyện của Original, nên Original đã có AUC khoảng 50. AUC khoảng 50 **không** có nghĩa là mô hình quên tốt hay "như chưa từng thấy". Ví dụ DtD và -MKR trên Flickr30K có AUC gần 50 nhưng mô hình đã hỏng (độ chính xác sụp). Luôn xem AUC cùng với TR/IR. Chiều của AUC ở đây (lớp `D_f` là dương) có thể ngược với code repo gốc: cột `AUC_ITC_repo` trong bảng Flickr30K của script bằng `100 − AUC_ITC`.
 
-## 8. Giới hạn đã biết
+## 8. Phạm vi và thiết lập của các kết quả
 
-- `k_test=16` ở profile `fast`; không có Retrain.
-- NLVR2 chỉ dùng tập con 8000 mẫu của train: 1000 mẫu cho `D_f`, 7000 mẫu còn lại làm `D_r` (dùng cho MKR khi xoá). `D_r^eval` (5000 mẫu đầu của `D_r`, dùng để tính AUC và Retain Acc) là tập con của `D_r`, nên không phải dữ liệu chưa thấy.
-- Chỉ thử ALBEF.
-- Số ngẫu nhiên tiêu thụ khác nhau giữa các lần chạy nên chênh lệch dưới khoảng 1 điểm là nhiễu.
-- Các số trong báo cáo lấy từ ba notebook gốc (Kaggle và Colab). `multidelete.py` và `MultiDelete_all.ipynb` là bản gộp viết sau đó để chạy lại từ đầu bằng một lệnh.
-
+- **Cấu hình:** một seed (42), `D_f` = 1000 ảnh (Flickr30K) hoặc 1000 mẫu (NLVR2), backbone ALBEF. Profile `fast` dùng `k_test=16`; chạy `--profile paper` để dùng `k_test=128`.
+- **Mốc so sánh:** script không chạy Retrain (huấn luyện lại từ đầu), nên bảng kết quả không có cột Retrain.
+- **Dữ liệu NLVR2:** dùng tập con 8000 mẫu của train: 1000 mẫu cho `D_f`, 7000 mẫu còn lại làm `D_r` (dùng cho MKR khi xoá). `D_r^eval` (5000 mẫu đầu của `D_r`, dùng để tính AUC và Retain Acc) là tập con của `D_r`, nên không phải dữ liệu chưa thấy.
+- **Biến động:** số ngẫu nhiên tiêu thụ khác nhau giữa các lần chạy, nên chênh lệch dưới khoảng 1 điểm giữa hai cấu hình nên coi là nhiễu.
+- **Nguồn số liệu:** các số trong báo cáo lấy từ ba notebook gốc (Kaggle và Colab). `multidelete.py` và `MultiDelete_all.ipynb` là bản gộp viết sau đó để chạy lại từ đầu bằng một lệnh.
